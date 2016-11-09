@@ -1,0 +1,15 @@
+extends: airbnb-es5
+
+parserOptions:
+
+  rules:
+    #style
+    comma-dangle: [2, "never"]
+    func-names: 0
+    no-param-reassign: 0
+    consistent-this: [2, "self"]
+
+globals:
+  describe: 1
+  beforeEach: 1
+  it: 1
