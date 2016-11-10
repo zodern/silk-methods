@@ -21,7 +21,12 @@ describe('Caller', () => {
       write(message) {
         expect(message).to.deep.equal({
           id: 1,
-          error: 'not-found'
+          error: {
+            message: 'not-found',
+            code: null,
+            description: null
+          },
+          result: null
         });
         done();
       }
@@ -33,7 +38,7 @@ describe('Caller', () => {
     },
       ws);
   });
-  it('handle method sync general error', (done) => {
+  it('should handle method sync general error', (done) => {
     let methods = {
       'syncError'() {
         throw new Error('test');
@@ -44,7 +49,12 @@ describe('Caller', () => {
       write(message) {
         expect(message).to.deep.equal({
           id: 1,
-          error: 'general-error'
+          error: {
+            message: 'general-error',
+            description: null,
+            code: null
+          },
+          result: null
         });
         done();
       }
@@ -55,23 +65,31 @@ describe('Caller', () => {
       method: 'syncError'
     }, ws);
   });
-  it('handle sync context.error', (done) => {
+  it('should handle sync context.error', (done) => {
     const methods = {
       'syncError'() {
+        console.dir(this);
         this.error('specific-error', 'desc', 1);
       }
     };
 
     let ws = {
       write(message) {
-        expect(message).to.deep.equal({
-          id: 1,
-          error: {
-            message: 'specific-error',
-            description: 'desc',
-            code: 1
-          }
-        });
+        // console.log('message', JSON.stringify(message));
+
+        try {
+          expect(message).to.deep.equal({
+            id: 1,
+            error: {
+              message: 'specific-error',
+              description: 'desc',
+              code: 1
+            },
+            result: null
+          });
+        } catch (e) {
+          console.log(e);
+        }
         done();
       }
     };
@@ -82,21 +100,7 @@ describe('Caller', () => {
     },
       ws);
   });
-  it('pass arg', (done) => {
-    let ws = {
-      write() { }
-    };
-    let methods = {
-      'arg'(message) {
-        expect(message).to.equal('message');
-        done();
-      }
-    };
-    caller(methods,
-      { id: 1, method: 'arg', arg: 'message' },
-      ws);
-  });
-  it('send return value', (done) => {
+  it('should pass arg and return value', (done) => {
     let ws = {
       write(message) {
         expect(message).to.deep.equal({

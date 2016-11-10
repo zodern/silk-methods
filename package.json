@@ -16,7 +16,7 @@
     "mocha": "^3.1.2"
   },
   "scripts": {
-    "test": "mocha",
+    "test": "mocha -w",
     "eslint": "eslint ./"
   }
 }

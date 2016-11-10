@@ -7,28 +7,35 @@ module.exports = function caller(methods, message, ws) {
   let async = false;
   let args = [arg];
 
-  if (!(name in methods)) {
+  function sendResult(result) {
     ws.write({
       id: id,
-      error: 'not-found'
+      result: result,
+      error: null
     });
+  }
+
+  function sendError(errorMessage, description = null, code = null) {
+    ws.write({
+      id: id,
+      result: null,
+      error: {
+        message: errorMessage,
+        description,
+        code
+      }
+    });
+  }
+
+  if (!(name in methods)) {
+    sendError('not-found');
     return;
   }
 
   let context = {
     error(errorMessage, description, code) {
-      ws.write({
-        id: id,
-        error: {
-          errorMessage,
-          description,
-          code
-        }
-      });
-
-      console.log('context.error');
-
-      this.handledError = true;
+      handledError = true;
+      sendError(errorMessage, description, code);
     }
   };
 
@@ -44,16 +51,11 @@ module.exports = function caller(methods, message, ws) {
     returnValue = methods[name].apply(context, args);
   } catch (e) {
     if (!handledError) {
-      ws.write({
-        id: id,
-        error: 'general-error'
-      });
-
-      return;
+      sendError('general-error');
     }
   }
 
-  if (async === false) {
+  if (async === false && !handledError) {
     ws.write({
       id: id,
       result: returnValue
