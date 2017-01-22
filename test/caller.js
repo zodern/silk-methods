@@ -68,7 +68,6 @@ describe('Caller', () => {
   it('should handle sync context.error', (done) => {
     const methods = {
       'syncError'() {
-        console.dir(this);
         this.error('specific-error', 'desc', 1);
       }
     };

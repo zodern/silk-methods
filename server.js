@@ -4,7 +4,16 @@ var caller = require('./caller');
 
 function Server(httpServer) {
   this.httpServer = httpServer;
+  this._primus = new Primus(httpServer, {
+    pathname: 'silk-methods'
+  });
   this._methods = {};
+
+  this._primus.on('connection', (spark) => {
+    spark.on('data', (data) => {
+      console.log(data);
+    });
+  });
 }
 
 Server.prototype = {
